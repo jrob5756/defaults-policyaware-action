@@ -68,3 +68,8 @@ export interface PolicyDefinitionProperties {
   parameters: any;
   policyRule: any;
 }
+
+export interface ResourceEvaluationResult {
+  resource: string;
+  evaluations: PolicyEvaluation[] | undefined;
+}

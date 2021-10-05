@@ -3,36 +3,46 @@
 import * as fs from 'fs';
 import * as core from '@actions/core';
 import { RestClient } from 'typed-rest-client/RestClient';
-import { EvaluationResponse, PolicyEvaluation } from './models';
+import { EvaluationResponse, PolicyDefinition, ResourceEvaluationResult } from './models';
 
-export async function evaluateTemplate(templatePath: string, accessToken: string, subscriptionId: string): Promise<void> {
-  core.debug(`Reading template from ${templatePath}`);
+export async function evaluateTemplate(templatePath: string, accessToken: string, subscriptionId: string): Promise<{ evaluations: ResourceEvaluationResult[]; policies: Map<string, string> }> {
+  core.debug(`Reading ARM template from ${templatePath}`);
   const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
 
   core.debug(`Evaluating ${template.resources.length} resources`);
-  const resp = await evaluateResources(template.resources, accessToken, subscriptionId);
+  const evaluations = await evaluateResources(template.resources, accessToken, subscriptionId);
 
-  core.debug(`Recieved results for ${resp.length} policy violations, retrieving policy definitions...`);
+  core.debug(`Recieved results for ${evaluations.length} noncompliant resources, retrieving policy definitions...`);
 
-  // const client = new RestClient('github', `https://management.azure.com/subscriptions/${subscriptionId}`);
-  // // eslint-disable-next-line @typescript-eslint/promise-function-async
-  // const policies = await Promise.all(resp.map(x => client.get<PolicyDefinition>(`/providers/Microsoft.Authorization/policyDefinitions/${x.policyInfo.policyDefinitionId}?api-version=2021-06-01`)));
-  // return policies.map(x => x.result).filter(notEmpty);
+  let policyIds = evaluations
+    .map(x => x.evaluations)
+    .filter(notEmpty)
+    .reduce((x, y) => x.concat(y), [])
+    .map(x => x.policyInfo.policyDefinitionId);
+  policyIds = [...new Set(policyIds)];
+
+  const client = new RestClient('github', `https://management.azure.com/subscriptions/${subscriptionId}`);
+  const policies = await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    policyIds.map(x => client.get<PolicyDefinition>(`/providers/Microsoft.Authorization/policyDefinitions/${x}?api-version=2021-06-01`))
+  );
+
+  return {
+    evaluations,
+    policies: new Map<string, string>(policies.map(x => [x.result?.name, x.result?.properties.displayName] as [string, string]))
+  };
 }
 
-async function evaluateResources(resources: any[], accessToken: string, subscriptionId: string): Promise<PolicyEvaluation[]> {
-  let result: PolicyEvaluation[] = [];
+async function evaluateResources(resources: any[], accessToken: string, subscriptionId: string): Promise<ResourceEvaluationResult[]> {
+  const result: ResourceEvaluationResult[] = [];
   for (const resource of resources) {
     core.debug(`Evaluating resource ${resource.name} of type ${resource.type}`);
-    const evaluations = await evaluateResource(resource, accessToken, subscriptionId);
-    if (evaluations) {
-      result = [...result, ...evaluations];
-    }
+    result.push(await evaluateResource(resource, accessToken, subscriptionId));
   }
   return result;
 }
 
-async function evaluateResource(resource: any, accessToken: string, subscriptionId: string): Promise<PolicyEvaluation[] | undefined> {
+async function evaluateResource(resource: any, accessToken: string, subscriptionId: string): Promise<ResourceEvaluationResult> {
   const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.PolicyInsights/checkPolicyRestrictions?api-version=2020-07-01`;
   const client = new RestClient('github');
 
@@ -56,9 +66,9 @@ async function evaluateResource(resource: any, accessToken: string, subscription
   core.debug(resp.statusCode.toString());
   core.debug(JSON.stringify(resp.result));
 
-  return resp.result?.contentEvaluationResult?.policyEvaluations;
+  return { resource: resource.name, evaluations: resp.result?.contentEvaluationResult?.policyEvaluations };
 }
 
-// function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
-//   return value !== null && value !== undefined;
-// }
+function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+  return value !== null && value !== undefined;
+}

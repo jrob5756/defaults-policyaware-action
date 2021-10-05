@@ -5,11 +5,6 @@ import { evaluateTemplate } from './evaluation';
 
 async function run(): Promise<void> {
   try {
-    core.debug('debug');
-    core.info('info');
-    core.warning('warning');
-    core.error('error');
-
     const azPath = await which('az', true);
     const armPath: string = core.getInput('templateLocation');
     const subscriptionId = core.getInput('subscriptionId');
@@ -22,7 +17,19 @@ async function run(): Promise<void> {
     const token: string = JSON.parse(output.stdout).accessToken;
 
     core.debug('Evaluating ARM template...');
-    await evaluateTemplate(armPath, token, subscriptionId);
+    const results = await evaluateTemplate(armPath, token, subscriptionId);
+    if (results.evaluations.length > 0) {
+      for (const evaluation of results.evaluations) {
+        core.error(`The resource '${evaluation.resource}' has the following ${evaluation.evaluations?.length} policy violations`);
+        if (evaluation.evaluations) {
+          for (const policyEvaluation of evaluation.evaluations) {
+            core.error(` - ${results.policies.get(policyEvaluation.policyInfo.policyDefinitionId)}`);
+          }
+        }
+      }
+
+      core.setFailed('ARM template has failed policy violations!');
+    }
   } catch (error: unknown) {
     const ex = error as Error;
     core.setFailed(ex.message);
