@@ -55,7 +55,6 @@ async function evaluateResources(resources: any[], accessToken: string, subscrip
 async function evaluateResource(resource: any, accessToken: string, subscriptionId: string): Promise<ResourceEvaluationResult> {
   const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.PolicyInsights/checkPolicyRestrictions?api-version=2020-07-01`;
   const client = new RestClient('github');
-
   core.debug(`Calling check policy API at ${url}`);
   const resp = await client.create<EvaluationResponse>(
     url,

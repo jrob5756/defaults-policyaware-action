@@ -24,7 +24,7 @@ async function run(): Promise<void> {
         core.info(`The resource '${evaluation.resource}' has the following ${evaluation.evaluations?.length} policy violations`);
         if (evaluation.evaluations) {
           for (const policyEvaluation of evaluation.evaluations) {
-            core.info(` - ${results.policies.get(policyEvaluation.policyInfo.policyDefinitionId)}`);
+            core.info(` - ${results.policies.get(policyEvaluation.policyInfo.policyDefinitionName)}`);
           }
         }
       }
