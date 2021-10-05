@@ -24,7 +24,13 @@ export async function evaluateTemplate(templatePath: string, accessToken: string
   const client = new RestClient('github', `https://management.azure.com/subscriptions/${subscriptionId}`);
   const policies = await Promise.all(
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    policyIds.map(x => client.get<PolicyDefinition>(`/providers/Microsoft.Authorization/policyDefinitions/${x}?api-version=2021-06-01`))
+    policyIds.map(x =>
+      client.get<PolicyDefinition>(`/providers/Microsoft.Authorization/policyDefinitions/${x}?api-version=2021-06-01`, {
+        additionalHeaders: {
+          Authorization: `bearer ${accessToken}`
+        }
+      })
+    )
   );
 
   return {
