@@ -33,9 +33,13 @@ export async function evaluateTemplate(templatePath: string, accessToken: string
     )
   );
 
+  core.debug(`policies: ${JSON.stringify(policies)}`);
+  const policyMap = new Map<string, string>(policies.map(x => [x.result?.name, x.result?.properties.displayName] as [string, string]));
+  core.debug(`policy map: ${JSON.stringify(policyMap)}`);
+
   return {
     evaluations,
-    policies: new Map<string, string>(policies.map(x => [x.result?.name, x.result?.properties.displayName] as [string, string]))
+    policies: policyMap
   };
 }
 
