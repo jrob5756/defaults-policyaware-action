@@ -69,8 +69,8 @@ async function evaluateResource(resource: any, accessToken: string, subscription
     }
   );
 
-  core.debug(resp.statusCode.toString());
-  core.debug(JSON.stringify(resp.result));
+  core.debug(`Status code = ${resp.statusCode}`);
+  core.debug(`Payload = ${JSON.stringify(resp.result)}`);
 
   return { resource: resource.name, evaluations: resp.result?.contentEvaluationResult?.policyEvaluations };
 }

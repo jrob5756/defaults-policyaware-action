@@ -18,12 +18,13 @@ async function run(): Promise<void> {
 
     core.debug('Evaluating ARM template...');
     const results = await evaluateTemplate(armPath, token, subscriptionId);
+    core.debug(JSON.stringify(results));
     if (results.evaluations.length > 0) {
       for (const evaluation of results.evaluations) {
-        core.error(`The resource '${evaluation.resource}' has the following ${evaluation.evaluations?.length} policy violations`);
+        core.info(`The resource '${evaluation.resource}' has the following ${evaluation.evaluations?.length} policy violations`);
         if (evaluation.evaluations) {
           for (const policyEvaluation of evaluation.evaluations) {
-            core.error(` - ${results.policies.get(policyEvaluation.policyInfo.policyDefinitionId)}`);
+            core.info(` - ${results.policies.get(policyEvaluation.policyInfo.policyDefinitionId)}`);
           }
         }
       }
