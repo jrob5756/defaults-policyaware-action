@@ -1,0 +1,15 @@
+name: "Azure Check Policy Action"
+description: "Use this GitHub Action task to validate an Azure Resource Manager (ARM) Template against Azure policy."
+inputs:
+  subscriptionId:
+    description: "The subscription to evaluate the ARM template against."
+    required: true
+  templateLocation:
+    description: "Specify the path to the Azure Resource Manager (ARM) template."
+    required: true
+branding:
+  color: orange
+  icon: package
+runs:
+  using: "node12"
+  main: "dist/index.js"

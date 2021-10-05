@@ -1,0 +1,46 @@
+{
+  "name": "defaults-policy-awareness-action",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sample policy awareness action.",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "test": "jest",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/actions/typescript-action.git"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
+  "author": "",
+  "dependencies": {
+    "@actions/core": "^1.6.0",
+    "@actions/exec": "^1.1.0",
+    "@actions/io": "^1.1.1",
+    "fs": "^0.0.1-security",
+    "typed-rest-client": "^1.8.6"
+  },
+  "devDependencies": {
+    "@types/node": "^16.3.3",
+    "@typescript-eslint/parser": "^4.33.0",
+    "@vercel/ncc": "^0.31.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-github": "^4.3.0",
+    "eslint-plugin-jest": "^24.5.2",
+    "jest": "^27.2.4",
+    "js-yaml": "^4.1.0",
+    "prettier": "2.4.1",
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.3"
+  }
+}
