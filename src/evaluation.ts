@@ -21,11 +21,11 @@ export async function evaluateTemplate(templatePath: string, accessToken: string
     .map(x => x.policyInfo.policyDefinitionId);
   policyIds = [...new Set(policyIds)];
 
-  const client = new RestClient('github', `https://management.azure.com/subscriptions/${subscriptionId}`);
+  const client = new RestClient('github', `https://management.azure.com/`);
   const policies = await Promise.all(
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     policyIds.map(x =>
-      client.get<PolicyDefinition>(`/providers/Microsoft.Authorization/policyDefinitions/${x}?api-version=2021-06-01`, {
+      client.get<PolicyDefinition>(`${x}?api-version=2021-06-01`, {
         additionalHeaders: {
           Authorization: `bearer ${accessToken}`
         }
