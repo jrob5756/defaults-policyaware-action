@@ -1,0 +1,30 @@
+name: 'build-test'
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - run: |
+  #         npm install
+  #     - run: |
+  #         npm run all
+  test: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: npm install
+      - run: npm run build  
+      - run: npm run package  
+      - uses: ./
+        with:
+          templateLocation: ./examples/zones-postgresql-database.armdeploy.json
+          subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
